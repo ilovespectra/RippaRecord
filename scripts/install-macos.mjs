@@ -14,8 +14,15 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const require = createRequire(import.meta.url);
 const appName = 'Rippa Record';
 const appId = 'com.rippa.record';
-const applications = path.join(os.homedir(), 'Applications');
-const destination = path.join(applications, `${appName}.app`);
+const metadata = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const stageOnly = process.env.RIPPA_STAGE_ONLY === '1';
+const stageDir = path.resolve(process.env.RIPPA_STAGE_DIR || path.join(root, 'dist-candidates'));
+const destination = stageOnly
+  ? path.join(stageDir, `${appName}-${metadata.version}.app`)
+  : path.join(os.homedir(), 'Applications', `${appName}.app`);
+if (stageOnly && fs.existsSync(destination)) {
+  throw new Error(`Refusing to overwrite existing staged candidate: ${destination}`);
+}
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'rippa-record-install-'));
 
 try {
@@ -64,17 +71,20 @@ try {
     }
   }
   execFileSync('/usr/bin/codesign', ['--force', '--deep', '--sign', signingIdentity, builtApp], { stdio: 'inherit' });
-  fs.mkdirSync(applications, { recursive: true });
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
   execFileSync('/usr/bin/ditto', [builtApp, destination]);
-  execFileSync(
-    '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister',
-    ['-f', destination],
-  );
-
-  console.log(`Installed ${destination}`);
-  console.log('The app icon is a red recording dot; the menu bar shows one red dot when active and one outline when idle.');
-  console.log('Choose Start Recording from its dropdown to begin automation.');
-  console.log('The menu stays idle between recordings. No VS Code or Apple Shortcuts is needed.');
+  if (stageOnly) {
+    console.log(`Staged isolated candidate ${destination}`);
+  } else {
+    execFileSync(
+      '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister',
+      ['-f', destination],
+    );
+    console.log(`Installed ${destination}`);
+    console.log('The app icon is a red recording dot; the menu bar shows one red dot when active and one outline when idle.');
+    console.log('Choose Start Recording from its dropdown to begin automation.');
+    console.log('The menu stays idle between recordings. No VS Code or Apple Shortcuts is needed.');
+  }
 } finally {
   fs.rmSync(temporary, { recursive: true, force: true });
 }

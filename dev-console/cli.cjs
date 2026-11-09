@@ -10,15 +10,16 @@ const root = path.resolve(__dirname, '..');
 const packagePath = path.join(root, 'package.json');
 const lockPath = path.join(root, 'package-lock.json');
 
-function nextVersion(version, level) {
-  const match = String(version).match(/^(\d+)\.(\d+)\.(\d+)$/);
+function nextVersion(version, action = 'next') {
+  const match = String(version).match(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
   if (!match) throw new Error(`Expected a stable x.y.z version, got: ${version}`);
+  if (!['next', 'patch'].includes(action)) throw new Error('Use next (or the legacy patch alias) for one rollover step.');
   let [major, minor, patch] = match.slice(1).map(Number);
-  if (level === 'major') { major++; minor = 0; patch = 0; }
-  else if (level === 'minor') { minor++; patch = 0; }
-  else if (level === 'patch') patch++;
-  else throw new Error(`Unknown version bump: ${level}`);
-  return `${major}.${minor}.${patch}`;
+  if (minor > 9) return `${major + 1}.0.0`;
+  if (patch > 9) return minor < 9 ? `${major}.${minor + 1}.0` : `${major + 1}.0.0`;
+  if (patch < 9) return `${major}.${minor}.${patch + 1}`;
+  if (minor < 9) return `${major}.${minor + 1}.0`;
+  return `${major + 1}.0.0`;
 }
 
 function run(command, args) {
@@ -41,8 +42,8 @@ async function main() {
     console.log(`\n${appName} Developer Console · ${metadata.version}`);
     console.log('Runs tests, bumps the app version, then builds and installs the local macOS app.');
     console.log('It does not publish releases or configure in-app updates.');
-    const level = (process.argv[2] || await rl.question('Version action (patch / minor / major / current): ')).trim().toLowerCase();
-    const targetVersion = level === 'current' ? metadata.version : nextVersion(metadata.version, level);
+    const action = (process.argv[2] || await rl.question('Version action (next / current): ')).trim().toLowerCase();
+    const targetVersion = action === 'current' ? metadata.version : nextVersion(metadata.version, action);
     const answer = await rl.question(`Run tests and build ${appName} ${targetVersion}? [y/N] `);
     if (!/^y(es)?$/i.test(answer.trim())) {
       console.log('No changes made.');
@@ -67,7 +68,11 @@ async function main() {
       if (originalLock !== null) fs.writeFileSync(lockPath, originalLock);
       throw error;
     }
-    console.log(`\nBuilt ${appName} ${targetVersion}. The installed app is local only; release hosting is not configured.`);
+    if (process.env.RIPPA_STAGE_ONLY === '1') {
+      console.log(`\nBuilt ${appName} ${targetVersion} as an isolated local candidate. It was not installed or published.`);
+    } else {
+      console.log(`\nBuilt ${appName} ${targetVersion}. The installed app is local only; release hosting is not configured.`);
+    }
   } finally {
     rl.close();
   }
