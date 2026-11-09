@@ -1,0 +1,26 @@
+{
+  "name": "rippa-record",
+  "productName": "Rippa Record",
+  "version": "0.1.0",
+  "description": "Floating menubar widget that automates Reason stream-recording (rippa mode)",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "install:mac": "node scripts/install-macos.mjs",
+    "package": "npm run install:mac",
+    "dev:console": "node dev-console/cli.cjs",
+    "release:preflight": "node dev-console/cli.cjs --owner-preflight",
+    "test": "node --test",
+    "probe:menus": "node scripts/probe-menus.js",
+    "probe:prefs": "node scripts/probe-prefs.js"
+  },
+  "author": "ilovespectra",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^33.4.11"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}

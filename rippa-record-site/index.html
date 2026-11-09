@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141719">
+  <meta name="description" content="Rippa Record is a macOS menu-bar helper that prepares Reason, follows playback, and helps finish and export a recording.">
+  <title>Rippa Record — Ready when the music starts</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #141719;
+      --panel: #1d2224;
+      --panel-hi: #242b2d;
+      --ink: #f3efe8;
+      --muted: #aeb5b1;
+      --soft: #7f8a86;
+      --line: #ffffff18;
+      --red: #df4c43;
+      --red-hi: #ff7064;
+      --green: #a8d59c;
+      --cream: #ead8bc;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; min-width: 320px; color: var(--ink); background:
+        radial-gradient(ellipse at 82% 8%, #cf574311 0, transparent 32rem),
+        radial-gradient(ellipse at 7% 35%, #85a77b0b 0, transparent 30rem), var(--bg);
+      font: 15px/1.6 var(--sans);
+    }
+    a { color: inherit; }
+    .wrap { width: min(1080px, calc(100% - 44px)); margin-inline: auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-dot { width: 17px; height: 17px; border: 2px solid #8d9993; border-radius: 50%; box-shadow: inset 0 0 0 4px var(--bg); }
+    .brand-name { display: block; color: var(--ink); font-weight: 760; letter-spacing: -.02em; }
+    .brand-sub { display: block; margin-top: 1px; color: var(--soft); font: 9px var(--mono); letter-spacing: .13em; text-transform: uppercase; }
+    nav { display: flex; align-items: center; gap: 26px; color: #c0c7c2; font-size: 12px; }
+    nav a { text-decoration: none; }
+    nav a:hover { color: var(--red-hi); }
+    .nav-pill { padding: 8px 13px; border: 1px solid #ffffff25; border-radius: 999px; }
+    .hero { display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(36px, 7vw, 88px); padding: 90px 0 82px; }
+    .eyebrow { color: var(--red-hi); font: 10px var(--mono); letter-spacing: .18em; text-transform: uppercase; }
+    h1 { max-width: 620px; margin: 15px 0 20px; font-size: clamp(48px, 7vw, 80px); font-weight: 740; line-height: .98; letter-spacing: -.07em; }
+    h1 span { color: var(--cream); }
+    .hero-copy { max-width: 520px; margin: 0; color: #c2c8c3; font-size: clamp(16px, 1.7vw, 18px); }
+    .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+    .primary { display: inline-flex; align-items: center; gap: 10px; padding: 12px 17px; border-radius: 8px; color: white; background: var(--red); box-shadow: 0 8px 25px #df4c4326; font-size: 13px; font-weight: 720; text-decoration: none; transition: transform .16s, background .16s; }
+    .primary:hover { transform: translateY(-2px); background: var(--red-hi); }
+    .primary b { font: 18px var(--mono); }
+    .quiet-link { color: #c4cbc5; font-size: 12px; text-decoration-color: #c4cbc577; text-underline-offset: 4px; }
+    .meta-line { display: flex; flex-wrap: wrap; gap: 9px 16px; margin-top: 18px; color: var(--soft); font: 10px var(--mono); }
+    .meta-line span::before { content: "•"; margin-right: 7px; color: var(--red); }
+    .console { position: relative; padding: 19px; border: 1px solid #ffffff1c; border-radius: 18px; background: linear-gradient(145deg, #262c2d, #181c1e 74%); box-shadow: 0 30px 75px #0006, inset 0 1px #ffffff0b; }
+    .console::before { content: ""; position: absolute; z-index: -1; inset: 12% -8% -12% 12%; border-radius: 50%; background: #dc4c3a13; filter: blur(45px); }
+    .console-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 1px 2px 16px; color: #a9b2ac; font: 10px var(--mono); letter-spacing: .13em; text-transform: uppercase; }
+    .idle-indicator { display: inline-flex; align-items: center; gap: 8px; color: var(--green); }
+    .idle-indicator i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px #a8d59c88; }
+    .console-screen { padding: 20px; border: 1px solid #ffffff12; border-radius: 11px; background: #111516; }
+    .screen-label { color: #76817c; font: 9px var(--mono); letter-spacing: .15em; text-transform: uppercase; }
+    .screen-state { display: flex; align-items: center; gap: 14px; margin: 17px 0 9px; }
+    .record-dot { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #ff8c80, #d43e35 65%, #8d2823); box-shadow: 0 0 21px #ef4d4366, inset 0 1px 2px #ffd0c577; }
+    .screen-state strong { font-size: 20px; line-height: 1.1; letter-spacing: -.03em; }
+    .screen-state small { display: block; margin-top: 5px; color: #92a099; font: 10px var(--mono); }
+    .screen-rule { height: 1px; margin: 18px 0; background: #ffffff14; }
+    .screen-footer { display: flex; justify-content: space-between; gap: 12px; color: #89948e; font: 9px var(--mono); }
+    .step-list { display: grid; gap: 11px; margin: 18px 2px 2px; }
+    .step { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 9px; color: #cbd0ca; font-size: 11px; }
+    .step i { display: grid; place-items: center; width: 21px; height: 21px; border: 1px solid #ffffff20; border-radius: 50%; color: #abb5ae; font: 10px var(--mono); font-style: normal; }
+    .step small { color: #8c9891; font: 9px var(--mono); text-transform: uppercase; }
+    .step.current i { border-color: #da5a4f; color: var(--red-hi); background: #da5a4f16; }
+    .step.current small { color: var(--red-hi); }
+    .section { padding: 32px 0 90px; scroll-margin-top: 24px; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 25px; margin-bottom: 25px; }
+    .kicker { color: var(--soft); font: 9px var(--mono); letter-spacing: .17em; text-transform: uppercase; }
+    h2 { margin: 8px 0 0; font-size: clamp(29px, 4vw, 42px); line-height: 1.07; letter-spacing: -.05em; }
+    .section-intro { max-width: 390px; margin: 0; color: var(--muted); font-size: 12px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .feature { min-height: 193px; padding: 21px; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(145deg, #ffffff08, #ffffff03); }
+    .number { display: inline-block; margin-bottom: 18px; color: var(--red-hi); font: 10px var(--mono); }
+    .feature h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: -.02em; }
+    .feature p { margin: 0; color: #aeb7b1; font-size: 12px; }
+    .details-grid { display: grid; grid-template-columns: .88fr 1.12fr; gap: 15px; }
+    .detail-card { padding: 22px; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); }
+    .detail-card h3 { margin: 0 0 14px; font-size: 14px; }
+    .requirements { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+    .requirements li { display: flex; gap: 10px; color: #bdc5bf; font-size: 11px; }
+    .requirements li::before { content: "✓"; color: var(--green); font: 12px var(--mono); }
+    .callout { border-color: #d84e443c; background: linear-gradient(145deg, #4b25231c, #242b2d); }
+    .callout h3 { display: flex; align-items: center; gap: 8px; }
+    .callout h3::before { content: "!"; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; color: #ffb1a9; background: #e2534825; font: 11px var(--mono); }
+    .callout p { margin: 0; color: #b9c1bb; font-size: 12px; }
+    .callout p + p { margin-top: 9px; }
+    .optional { color: #9daa9f; }
+    footer { display: flex; justify-content: space-between; gap: 18px; padding: 22px 0 30px; border-top: 1px solid var(--line); color: #86918a; font: 9px var(--mono); }
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 34px, 600px); }
+      .topbar { padding: 17px 0; }
+      nav { gap: 14px; }
+      nav a:not(.nav-pill) { display: none; }
+      .hero { grid-template-columns: 1fr; gap: 36px; padding: 62px 0 59px; }
+      .console { max-width: 540px; }
+      .section-head { align-items: start; flex-direction: column; gap: 11px; }
+      .section-intro { max-width: 540px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature { min-height: 0; }
+      .details-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 430px) {
+      .wrap { width: calc(100% - 28px); }
+      h1 { font-size: clamp(44px, 13vw, 58px); }
+      .hero { padding-top: 48px; }
+      .console { padding: 14px; }
+      .console-screen { padding: 16px; }
+      .screen-state strong { font-size: 18px; }
+      footer { flex-direction: column; gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="wrap topbar">
+    <a class="brand" href="#top" aria-label="Rippa Record home">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span><span class="brand-name">Rippa Record</span><span class="brand-sub">Mac menu-bar helper</span></span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#workflow">How it works</a>
+      <a href="#setup">Setup notes</a>
+      <a class="nav-pill" href="#workflow">See the workflow <span aria-hidden="true">↘</span></a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="wrap hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow">Ready before the music starts</span>
+        <h1 id="hero-title">Press record.<br><span>Keep playing.</span></h1>
+        <p class="hero-copy">Rippa Record is a small macOS menu-bar helper that prepares Reason, waits for playback, and helps turn your finished take into an exported audio file.</p>
+        <div class="actions"><a class="primary" href="#workflow"><b aria-hidden="true">●</b> See how Rippa works</a><a class="quiet-link" href="#setup">What you’ll need</a></div>
+        <div class="meta-line"><span>Reason session automation</span><span>Local menu-bar control</span></div>
+      </div>
+      <aside class="console" aria-label="Illustration of Rippa Record's recording workflow">
+        <div class="console-top"><span>Rippa Record</span><span class="idle-indicator"><i></i> READY</span></div>
+        <div class="console-screen">
+          <span class="screen-label">Rippa mode · session status</span>
+          <div class="screen-state"><span class="record-dot" aria-hidden="true"></span><div><strong>Waiting for playback</strong><small>Reason is armed. Start your stream when ready.</small></div></div>
+          <div class="screen-rule"></div>
+          <div class="screen-footer"><span>INPUT · BLACKHOLE 2CH</span><span>● STANDBY</span></div>
+        </div>
+        <div class="step-list" aria-hidden="true">
+          <div class="step"><i>1</i><span>Prepare the Reason session</span><small>Ready</small></div>
+          <div class="step current"><i>2</i><span>Wait for playback to begin</span><small>Listening</small></div>
+          <div class="step"><i>3</i><span>Loop, name and export the take</span><small>Finish</small></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="wrap section" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-head"><div><span class="kicker">One small control, three clear steps</span><h2 id="workflow-title">From stream to finished take.</h2></div><p class="section-intro">Start the helper from the menu bar. Rippa handles the setup sequence, then gets out of the way while you listen.</p></div>
+      <div class="feature-grid">
+        <article class="feature"><span class="number">01 / PREPARE</span><h3>Get Reason ready</h3><p>Start Recording opens your configured Reason project, selects the audio route, prepares the session, and shows a clear READY state.</p></article>
+        <article class="feature"><span class="number">02 / RECORD</span><h3>Play what you love</h3><p>Rippa can wait for playback to begin, then keep recording in sync. Pause or resume recording and playback together with ⌥⌘R.</p></article>
+        <article class="feature"><span class="number">03 / FINISH</span><h3>Loop and export</h3><p>Stop &amp; Finish wraps the selected take and runs Reason’s audio export. Optional local Ollama naming can use the tracks; otherwise Rippa uses a timestamp name.</p></article>
+      </div>
+    </section>
+
+    <section class="wrap section" id="setup" aria-labelledby="setup-title">
+      <div class="section-head"><div><span class="kicker">Before your first take</span><h2 id="setup-title">A little audio setup.</h2></div><p class="section-intro">Rippa coordinates the tools already on your Mac; it isn’t a replacement for the DAW or an isolated per-app audio recorder.</p></div>
+      <div class="details-grid">
+        <article class="detail-card"><h3>What you’ll need</h3><ul class="requirements"><li>macOS and Reason 10.4</li><li>A virtual loopback input configured in Reason</li><li>A configured macOS aggregate audio output</li><li>switchaudio-osx and nowplaying-cli helpers</li><li>Accessibility and Automation permissions for control</li></ul></article>
+        <article class="detail-card callout"><h3>Know how the audio route works</h3><p>Rippa records system audio routed through your configured aggregate output into Reason’s selected input. It does not capture an isolated audio stream from one app.</p><p class="optional">Ollama is optional and runs locally for track-based names; if it isn’t available, Rippa falls back to a timestamp name. Launching Rippa alone does not start recording or change audio settings.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap"><span>Rippa Record · A focused helper for Reason sessions.</span><span>macOS menu-bar app · Optional local Ollama naming</span></footer>
+</body>
+</html>

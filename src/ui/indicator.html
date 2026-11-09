@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  html, body { background: transparent; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  #pill {
+    margin: 4px;
+    height: 46px;
+    border-radius: 23px;
+    background: rgba(18, 18, 22, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    cursor: default;
+  }
+  #dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #ff3b30; flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.9);
+    animation: blink 1.2s infinite;
+  }
+  .paused #dot { background: #ff9f0a; box-shadow: 0 0 10px rgba(255,159,10,0.9); animation: none; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #label { color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; }
+  .btn {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .btn:hover { background: rgba(255,255,255,0.22); }
+</style>
+</head>
+<body>
+  <div id="pill">
+    <div id="dot"></div>
+    <div id="label">REC</div>
+    <div class="btn" id="toggle" title="Pause/Resume (⌥⌘R)">⏸</div>
+    <div class="btn" id="stop" title="Stop &amp; Finish (⌥⌘S)">■</div>
+  </div>
+<script>
+  const label = document.getElementById('label');
+  const toggle = document.getElementById('toggle');
+  document.getElementById('toggle').addEventListener('click', () => window.rippa.indicatorAction('toggle'));
+  document.getElementById('stop').addEventListener('click', () => window.rippa.indicatorAction('stop'));
+  window.rippa.onState((d) => {
+    if (d.state === 'paused') {
+      document.body.className = 'paused';
+      label.textContent = 'PAUSED';
+      toggle.textContent = '▶';
+    } else {
+      document.body.className = '';
+      label.textContent = 'REC';
+      toggle.textContent = '⏸';
+    }
+  });
+</script>
+</body>
+</html>

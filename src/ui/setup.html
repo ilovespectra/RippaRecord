@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rippa Record — Device Setup</title>
+<style>
+  :root { color-scheme: dark; font: 14px/1.5 -apple-system, BlinkMacSystemFont, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #111114; color: #f6f4f3; }
+  main { width: min(720px, 100%); margin: 0 auto; padding: 34px 38px 26px; }
+  .brand { display:flex; align-items:center; gap:10px; color:#ff5b50; font-size:12px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+  .dot { width:10px;height:10px;border-radius:50%;background:#ff3b30;box-shadow:0 0 14px #ff3b3080; }
+  h1 { margin:20px 0 6px; font-size:27px; letter-spacing:-.035em; }
+  .intro { max-width:610px; margin:0; color:#aaa7a7; }
+  .progress { display:flex; gap:7px; margin:26px 0 24px; }
+  .progress i { height:4px; flex:1; border-radius:5px; background:#363438; }
+  .progress i.active { background:#ff554a; }
+  .step { display:none; min-height:375px; }
+  .step.active { display:block; }
+  h2 { margin:0 0 7px; font-size:20px; }
+  .help { color:#aaa7a7; margin:0 0 22px; }
+  .field { margin:0 0 16px; }
+  label { display:block; margin:0 0 6px; font-size:12px; color:#e8e4e3; font-weight:650; }
+  input, select { width:100%; height:42px; padding:9px 11px; border:1px solid #464348; border-radius:8px; background:#1b1a1e; color:#f6f4f3; outline:none; font:inherit; }
+  input:focus, select:focus { border-color:#ff6256; box-shadow:0 0 0 3px #ff554a24; }
+  input[readonly] { color:#c7c2c1; }
+  .path-row { display:flex; gap:8px; }
+  .path-row input { flex:1; min-width:0; }
+  button { border:1px solid #4a464b; border-radius:8px; padding:9px 13px; background:#28262a; color:#f8f5f4; font:600 13px -apple-system,BlinkMacSystemFont,sans-serif; cursor:pointer; }
+  button:hover { background:#353136; }
+  button:disabled { opacity:.45; cursor:default; }
+  button.primary { background:#e9483f; border-color:#e9483f; color:white; }
+  button.primary:hover { background:#ff5b50; }
+  .check { display:flex; gap:9px; align-items:flex-start; color:#d1cdcc; font-size:13px; margin:12px 0; }
+  .check input { width:16px;height:16px;margin:1px 0 0;accent-color:#ff554a; }
+  .note { margin:15px 0 0; padding:12px 14px; border:1px solid #424045; border-radius:9px; background:#19181b; color:#bcb7b6; font-size:12px; }
+  .summary { margin:18px 0; padding:15px 17px; border:1px solid #3c393e; border-radius:10px; background:#19181b; }
+  .summary p { margin:7px 0; overflow-wrap:anywhere; color:#c9c4c3; }
+  .summary strong { color:#f6f4f3; }
+  .footer { display:flex; align-items:center; gap:10px; border-top:1px solid #302e32; padding-top:18px; }
+  #status { flex:1; color:#ffb8b1; font-size:12px; min-height:18px; }
+  .subtle { color:#999497; font-size:11px; }
+  @media(max-width:620px) { main { padding:24px 20px; } .step { min-height:410px; } .footer { flex-wrap:wrap; } #status { order:3; flex-basis:100%; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="dot"></span> Rippa Record · First-run setup</div>
+  <h1>Set up your recording rig</h1>
+  <p class="intro">Choose the playback app, audio route, and Reason project settings for this Mac. You can change these preferences later from Rippa’s menu-bar icon.</p>
+  <div class="progress" aria-label="Setup progress"><i class="active"></i><i></i><i></i><i></i></div>
+
+  <section class="step active" data-step="0">
+    <h2>1. Choose your playback app</h2>
+    <p class="help">Rippa can pause the selected player while it arms Reason. The actual recording follows the system audio route you choose next.</p>
+    <div class="field">
+      <label for="sourceApp">App to pause when recording starts (optional)</label>
+      <input id="sourceApp" list="knownApps" placeholder="For example, Spotify or Music" autocomplete="off">
+      <datalist id="knownApps"><option>Spotify</option><option>Music</option><option>Safari</option><option>Google Chrome</option><option>Firefox</option><option>VLC</option><option>QuickTime Player</option><option>TV</option></datalist>
+    </div>
+    <p class="note">This preference does not isolate one application’s audio. Rippa records the signal routed through the selected macOS output and the configured Reason input.</p>
+  </section>
+
+  <section class="step" data-step="1">
+    <h2>2. Choose the audio route</h2>
+    <p class="help">Pick the virtual recording input and the macOS output that feeds it. Device suggestions come from this Mac; you can still type a device name if needed.</p>
+    <div class="field"><label for="audioInput">Recording input used by Reason</label><input id="audioInput" list="inputDevices" autocomplete="off"><datalist id="inputDevices"></datalist></div>
+    <div class="field"><label for="systemOutput">macOS system output for playback</label><input id="systemOutput" list="outputDevices" autocomplete="off"><datalist id="outputDevices"></datalist></div>
+    <div class="field"><label for="monitorDevice">Physical monitor output</label><input id="monitorDevice" list="outputDevices" autocomplete="off"></div>
+    <div class="field"><label for="speakerDevice">Speaker output (optional mute target)</label><input id="speakerDevice" list="outputDevices" autocomplete="off"></div>
+    <div class="field"><label for="monitorVolume">Monitor volume when arming (0–100%)</label><input id="monitorVolume" type="number" min="0" max="100" step="1"></div>
+    <label class="check"><input id="muteSpeakers" type="checkbox"><span>Mute the speaker output before switching to the monitor route</span></label>
+    <label class="check"><input id="restoreAudio" type="checkbox"><span>Restore the previous macOS output and volume after export</span></label>
+  </section>
+
+  <section class="step" data-step="2">
+    <h2>3. Choose your Reason project and track</h2>
+    <p class="help">Rippa automates Reason for recording and export. The selected sequencer track is located by its visible name, not a saved screen coordinate.</p>
+    <div class="field">
+      <label for="reasonApp">Reason application</label>
+      <div class="path-row"><input id="reasonApp" readonly><button type="button" data-pick="application">Choose app…</button></div>
+    </div>
+    <div class="field">
+      <label for="projectPath">Reason project file</label>
+      <div class="path-row"><input id="projectPath" readonly><button type="button" data-pick="project">Choose file…</button></div>
+    </div>
+    <div class="field"><label for="processName">Reason process name</label><input id="processName" autocomplete="off"></div>
+    <div class="field"><label for="trackName">Sequencer track to record</label><input id="trackName" placeholder="Audio Track 1" autocomplete="off"></div>
+    <div class="field"><label for="windowMatch">Project window title contains</label><input id="windowMatch" autocomplete="off"></div>
+  </section>
+
+  <section class="step" data-step="3">
+    <h2>4. Review your setup</h2>
+    <p class="help">These settings are saved to this Mac’s Rippa preferences and are used on the next recording.</p>
+    <div id="summary" class="summary" aria-live="polite"></div>
+    <p class="note">Rippa will still ask macOS for Accessibility and Automation permissions when needed. Device or project changes can be made later from Preferences &amp; device setup.</p>
+  </section>
+
+  <div class="footer">
+    <button id="back" type="button" disabled>Back</button>
+    <span id="status" role="status"></span>
+    <button id="next" type="button" class="primary">Next</button>
+    <button id="save" type="button" class="primary" hidden>Save preferences</button>
+  </div>
+  <p class="subtle">Close this window to finish setup later. Rippa will not start recording until you choose Start Recording.</p>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const steps = [...document.querySelectorAll('.step')];
+  const bars = [...document.querySelectorAll('.progress i')];
+  let current = 0;
+  let loaded = null;
+  const text = (id) => $(id).value.trim();
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function fillList(id, values) {
+    const list = $(id);
+    list.replaceChildren();
+    for (const value of [...new Set(values || [])].filter(Boolean)) {
+      const option = document.createElement('option');
+      option.value = value;
+      list.appendChild(option);
+    }
+  }
+  function showStep(index) {
+    current = index;
+    steps.forEach((step, i) => step.classList.toggle('active', i === current));
+    bars.forEach((bar, i) => bar.classList.toggle('active', i <= current));
+    $('back').disabled = current === 0;
+    $('next').hidden = current === steps.length - 1;
+    $('save').hidden = current !== steps.length - 1;
+    $('status').textContent = '';
+    if (current === steps.length - 1) renderSummary();
+  }
+  function renderSummary() {
+    const summary = [
+      ['Playback app', text('sourceApp') || 'Not selected'],
+      ['Reason recording input', text('audioInput')],
+      ['macOS system output', text('systemOutput')],
+      ['Monitor output', text('monitorDevice') || 'Not selected'],
+      ['Reason project', text('projectPath')],
+      ['Reason track', text('trackName')],
+    ];
+    $('summary').innerHTML = summary.map(([label, value]) => `<p><strong>${esc(label)}:</strong> ${esc(value)}</p>`).join('');
+  }
+  function settings() {
+    return {
+      reason: {
+        appPath: text('reasonApp'),
+        processName: text('processName'),
+        projectPath: text('projectPath'),
+        projectWindowMatch: text('windowMatch'),
+        audioDevice: text('audioInput'),
+        trackName: text('trackName'),
+      },
+      audio: {
+        systemOutputDevice: text('systemOutput'),
+        speakerDevice: text('speakerDevice'),
+        monitorDevice: text('monitorDevice'),
+        monitorVolumePercent: Number($('monitorVolume').value),
+        muteSpeakersFirst: $('muteSpeakers').checked,
+        restoreAudioAfterFinish: $('restoreAudio').checked,
+      },
+      recording: { sourceApp: text('sourceApp') },
+    };
+  }
+  function baseName(path) {
+    return String(path || '').split('/').pop().replace(/\.app$/i, '').replace(/\.reason$/i, '');
+  }
+
+  $('back').addEventListener('click', () => showStep(Math.max(0, current - 1)));
+  $('next').addEventListener('click', () => {
+    if (current === 0 && text('sourceApp') && !/^[\w .()'-]+$/.test(text('sourceApp'))) {
+      $('status').textContent = 'Enter the app’s display name (for example, Spotify).';
+      return;
+    }
+    if (current === 1 && (!text('audioInput') || !text('systemOutput'))) {
+      $('status').textContent = 'Choose or type a Reason input and system output device.';
+      return;
+    }
+    showStep(Math.min(steps.length - 1, current + 1));
+  });
+  document.querySelectorAll('[data-pick]').forEach((button) => button.addEventListener('click', async () => {
+    $('status').textContent = '';
+    try {
+      const kind = button.dataset.pick === 'project' ? 'project' : 'application';
+      const chosen = await window.rippa.pickSetupPath(kind);
+      if (!chosen) return;
+      if (kind === 'application') {
+        $('reasonApp').value = chosen;
+        if (!$('processName').value.trim()) $('processName').value = baseName(chosen);
+      } else {
+        $('projectPath').value = chosen;
+        if (!$('windowMatch').value.trim()) $('windowMatch').value = baseName(chosen);
+      }
+    } catch (error) {
+      $('status').textContent = error.message || String(error);
+    }
+  }));
+  $('save').addEventListener('click', async () => {
+    $('status').textContent = '';
+    try {
+      await window.rippa.saveSetup(settings());
+    } catch (error) {
+      $('status').textContent = error.message || String(error);
+    }
+  });
+
+  async function initialize() {
+    try {
+      loaded = await window.rippa.getSetupData();
+      const { reason, audio, recording, devices } = loaded;
+      fillList('inputDevices', devices.inputs);
+      fillList('outputDevices', devices.outputs);
+      $('sourceApp').value = recording.sourceApp || '';
+      $('audioInput').value = reason.audioDevice || '';
+      $('systemOutput').value = audio.systemOutputDevice || '';
+      $('monitorDevice').value = audio.monitorDevice || '';
+      $('speakerDevice').value = audio.speakerDevice || '';
+      $('monitorVolume').value = audio.monitorVolumePercent ?? 40;
+      $('muteSpeakers').checked = audio.muteSpeakersFirst !== false;
+      $('restoreAudio').checked = audio.restoreAudioAfterFinish === true;
+      $('reasonApp').value = reason.appPath || '';
+      $('projectPath').value = reason.projectPath || '';
+      $('processName').value = reason.processName || 'Reason';
+      $('trackName').value = reason.trackName || 'Audio Track 1';
+      $('windowMatch').value = reason.projectWindowMatch || '';
+      if (!(devices.inputs || []).length) $('status').textContent = 'No input device list is available; type the Reason input name manually.';
+    } catch (error) {
+      $('status').textContent = `Could not load saved preferences: ${error.message || error}`;
+    }
+  }
+  initialize();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "reason": {
+    "appPath": "",
+    "processName": "Reason",
+    "projectPath": "",
+    "projectWindowMatch": "",
+    "audioDevice": "",
+    "trackName": "Audio Track 1",
+    "clickPoints": {
+      "trackHeader": null,
+      "monitorOff": null
+    },
+    "loopMenuOverride": "",
+    "exportMenuMatch": "Export Loop as Audio File"
+  },
+  "audio": {
+    "systemOutputDevice": "",
+    "speakerDevice": "",
+    "monitorDevice": "",
+    "monitorVolumePercent": 40,
+    "muteSpeakersFirst": false,
+    "restoreAudioAfterFinish": true
+  },
+  "shortcuts": {
+    "pauseResume": "Alt+Command+R",
+    "stopFinish": "Alt+Command+S"
+  },
+  "ollama": {
+    "url": "http://127.0.0.1:11434",
+    "model": "qwen2.5:3b",
+    "timeoutMs": 30000
+  },
+  "delays": {
+    "afterLaunchMs": 1200,
+    "afterOpenProjectMs": 1800,
+    "afterPrefsOpenMs": 700,
+    "afterMenuClickMs": 350,
+    "afterExportDialogMs": 700,
+    "keystrokeGapMs": 120
+  },
+  "recording": {
+    "sourceApp": ""
+  },
+  "setupComplete": false,
+  "nowPlayingPollMs": 800,
+  "loginWindowPatterns": [],
+  "indicatorMargin": 24
+}

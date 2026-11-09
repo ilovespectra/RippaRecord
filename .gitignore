@@ -1,0 +1,43 @@
+# Dependencies and generated packages
+node_modules/
+dist/
+build/
+release/
+out/
+.DS_Store
+.vercel/
+*.log
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+*.keychain-db
+
+# Per-machine preferences, profiles, and recording data
+/config.json
+/config/*.json
+config/
+!config/*.example.json
+user-data/
+userData/
+profiles/
+browser-profile*/
+recordings/
+exports/
+downloads/
+cookies*
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.jsonl
+
+/:-

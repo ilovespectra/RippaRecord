@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  html, body { background: transparent; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  #card {
+    margin: 6px;
+    min-height: 84px;
+    border-radius: 16px;
+    background: rgba(18, 18, 22, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 14px;
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+  #row { display: flex; align-items: center; gap: 12px; }
+  #logo {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 20px; color: #fff;
+    background: linear-gradient(135deg, #ff3b30, #ff2d55);
+  }
+  #text { flex: 1; min-width: 0; }
+  #status {
+    color: #fff; font-size: 13px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #sub { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #bar {
+    margin-top: 6px; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.12); overflow: hidden;
+  }
+  #fill {
+    height: 100%; width: 0%; border-radius: 2px;
+    background: linear-gradient(90deg, #ff3b30, #ff9f0a);
+    transition: width 0.5s ease;
+  }
+  .ready #card {
+    border-color: rgba(48, 209, 88, 0.8);
+    box-shadow: 0 0 24px rgba(48, 209, 88, 0.45), 0 8px 28px rgba(0,0,0,0.45);
+  }
+  .ready #logo { background: linear-gradient(135deg, #30d158, #28b14c); animation: pulse 1.1s infinite; }
+  .error #card { border-color: rgba(255, 69, 58, 0.9); }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #reco { color: rgba(255, 220, 160, 0.9); font-size: 11px; line-height: 1.35; display: none; }
+  #actions { display: none; flex-wrap: wrap; gap: 6px; }
+  .act {
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.1);
+    color: #fff; font-size: 11px; font-weight: 600;
+    border-radius: 8px; padding: 5px 10px; cursor: pointer;
+  }
+  .act:hover { background: rgba(255,255,255,0.25); }
+  .act.primary { background: #ff3b30; border-color: #ff3b30; }
+  .act.primary:hover { background: #ff5c52; }
+</style>
+</head>
+<body>
+  <div id="card">
+    <div id="row">
+      <div id="logo">R</div>
+      <div id="text">
+        <div id="status">Rippa</div>
+        <div id="sub"></div>
+        <div id="bar"><div id="fill"></div></div>
+      </div>
+    </div>
+    <div id="reco"></div>
+    <div id="actions"></div>
+  </div>
+<script>
+  const el = (id) => document.getElementById(id);
+  function setActions(d) {
+    const reco = el('reco'), actions = el('actions');
+    if (d.recommendation) { reco.textContent = '💡 ' + d.recommendation; reco.style.display = 'block'; }
+    else { reco.style.display = 'none'; }
+    actions.innerHTML = '';
+    if (d.actions && d.actions.length) {
+      d.actions.forEach((a, i) => {
+        const b = document.createElement('button');
+        b.className = 'act' + (i === 0 ? ' primary' : '');
+        b.textContent = a.label;
+        b.addEventListener('click', () => window.rippa.widgetAction(a.id));
+        actions.appendChild(b);
+      });
+      actions.style.display = 'flex';
+    } else {
+      actions.style.display = 'none';
+    }
+  }
+  window.rippa.onState((d) => {
+    document.body.className = '';
+    setActions(d);
+    const total = (d.steps && d.steps.length) || 10;
+    if (d.state === 'arming' || d.state === 'waiting-login') {
+      el('status').innerHTML = '<span class="spin">◌</span> Rippa mode engaging…';
+      el('sub').textContent = d.message || '';
+      el('fill').style.width = `${Math.round(((d.step || 0) / total) * 100)}%`;
+    } else if (d.state === 'ready') {
+      document.body.className = 'ready';
+      el('status').textContent = '● READY — recording';
+      el('sub').textContent = (d.warnings && d.warnings.length)
+        ? `⚠ ${d.warnings[0]}` : 'Hit Play on your stream ▶';
+      el('fill').style.width = '100%';
+    } else if (d.state === 'finishing') {
+      el('status').innerHTML = '<span class="spin">◌</span> Finishing…';
+      el('sub').textContent = d.message || '';
+    } else if (d.state === 'done') {
+      el('status').textContent = '✓ Exported';
+      el('sub').textContent = d.message || '';
+      el('fill').style.width = '100%';
+    } else if (d.state === 'error') {
+      document.body.className = 'error';
+      el('status').textContent = '✕ Rippa hit a snag';
+      el('sub').textContent = d.message || '';
+    }
+  });
+</script>
+</body>
+</html>

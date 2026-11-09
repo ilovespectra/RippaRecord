@@ -1,0 +1,83 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const readline = require('node:readline/promises');
+const { stdin, stdout } = require('node:process');
+const { verifyReleaseOwner } = require('./github-owner-preflight.cjs');
+
+const root = path.resolve(__dirname, '..');
+const packagePath = path.join(root, 'package.json');
+const lockPath = path.join(root, 'package-lock.json');
+
+function nextVersion(version, level) {
+  const match = String(version).match(/^(\d+)\.(\d+)\.(\d+)$/);
+  if (!match) throw new Error(`Expected a stable x.y.z version, got: ${version}`);
+  let [major, minor, patch] = match.slice(1).map(Number);
+  if (level === 'major') { major++; minor = 0; patch = 0; }
+  else if (level === 'minor') { minor++; patch = 0; }
+  else if (level === 'patch') patch++;
+  else throw new Error(`Unknown version bump: ${level}`);
+  return `${major}.${minor}.${patch}`;
+}
+
+function run(command, args) {
+  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', env: process.env });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} exited with ${result.status ?? 'no status'}`);
+}
+
+async function main() {
+  if (process.argv.includes('--owner-preflight')) {
+    const access = verifyReleaseOwner();
+    console.log(`Read-only release preflight passed for @${access.login}/${access.repo} (no upload performed).`);
+    return;
+  }
+
+  const metadata = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+  const appName = metadata.productName || metadata.name;
+  const rl = readline.createInterface({ input: stdin, output: stdout });
+  try {
+    console.log(`\n${appName} Developer Console · ${metadata.version}`);
+    console.log('Runs tests, bumps the app version, then builds and installs the local macOS app.');
+    console.log('It does not publish releases or configure in-app updates.');
+    const level = (process.argv[2] || await rl.question('Version action (patch / minor / major / current): ')).trim().toLowerCase();
+    const targetVersion = level === 'current' ? metadata.version : nextVersion(metadata.version, level);
+    const answer = await rl.question(`Run tests and build ${appName} ${targetVersion}? [y/N] `);
+    if (!/^y(es)?$/i.test(answer.trim())) {
+      console.log('No changes made.');
+      return;
+    }
+
+    run('npm', ['test']);
+    const originalPackage = fs.readFileSync(packagePath, 'utf8');
+    const originalLock = fs.existsSync(lockPath) ? fs.readFileSync(lockPath, 'utf8') : null;
+    try {
+      metadata.version = targetVersion;
+      fs.writeFileSync(packagePath, `${JSON.stringify(metadata, null, 2)}\n`);
+      if (originalLock) {
+        const lock = JSON.parse(originalLock);
+        lock.version = targetVersion;
+        if (lock.packages && lock.packages['']) lock.packages[''].version = targetVersion;
+        fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
+      }
+      run('npm', ['run', 'package']);
+    } catch (error) {
+      fs.writeFileSync(packagePath, originalPackage);
+      if (originalLock !== null) fs.writeFileSync(lockPath, originalLock);
+      throw error;
+    }
+    console.log(`\nBuilt ${appName} ${targetVersion}. The installed app is local only; release hosting is not configured.`);
+  } finally {
+    rl.close();
+  }
+}
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(`Developer Console stopped: ${error.message}`);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { main, nextVersion };
