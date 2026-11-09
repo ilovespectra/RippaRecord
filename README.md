@@ -1,7 +1,6 @@
 # Rippa 🔴
 
-A macOS menubar app that automates "rippa mode" — recording whatever you're
-streaming (Apple Music, YouTube, NTS, Spotify…) straight into Reason.
+Rippa Record is a macOS menu-bar helper for Reason: prepare a session, route system audio into Reason, then automate recording and export. It records the configured system audio route—not an isolated app stream. The standalone, portfolio-independent landing page is in [`rippa-record-site/`](rippa-record-site/).
 
 ## What it does when you click **Start Recording**
 
@@ -130,12 +129,17 @@ Use these to refine `loopMenuOverride` / `exportMenuMatch` in `config.json`.
 ## Developer Console
 
 From the Rippa Record source folder, run `npm run dev:console`. Choose
-`patch`, `minor`, `major`, or `current`; after confirmation it runs the tests,
-updates the version and lockfile, then rebuilds and installs Rippa Record in
-`~/Applications`. A failed build restores the prior version metadata. The
-console source lives in `dev-console/`, separate from the app bundle and the
-landing page in `rippa-record-site/`. This is a local packaging/install workflow
-only; it does not upload releases or install owner credentials in the app. Run
+`next` for one custom digit-rollover step or `current` to rebuild the current
+version. For example, `1.0.9` rolls to `1.1.0`, and `1.9.9` rolls to `2.0.0`.
+After confirmation the console runs the tests, updates the version and lockfile,
+then rebuilds Rippa Record. By default it installs in `~/Applications`. For a
+safe isolated candidate that does not replace the installed app, set
+`RIPPA_STAGE_ONLY=1` and optionally `RIPPA_STAGE_DIR=/path/to/candidates`
+before running the console; an existing candidate is never overwritten. A
+failed build restores the prior version metadata. The console source lives in
+`dev-console/`, separate from the app bundle and the landing page in
+`rippa-record-site/`. This is a local packaging/install workflow only; it does
+not upload releases or install owner credentials in the app. Run
 `npm run release:preflight` for a read-only check that the local GitHub CLI is
 authenticated as `ilovespectra` and has admin access to the official
 `ilovespectra/rippa-record` repository. It never publishes. Builds use a
