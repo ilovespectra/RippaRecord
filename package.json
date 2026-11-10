@@ -1,8 +1,9 @@
 {
   "name": "rippa-record",
   "productName": "Rippa Record",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Floating menubar widget that automates Reason stream-recording (rippa mode)",
+  "homepage": "https://ripparecord.kolektivkrog.si/",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",

@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 const { verifyReleaseOwner } = require('./github-owner-preflight.cjs');
 
 const OWNER = 'ilovespectra';
-const REPO = 'rippa-record';
+const REPO = 'RippaRecord';
 const APP = 'Rippa Record';
 const root = path.resolve(__dirname, '..');
 
@@ -40,13 +40,16 @@ function verifyMainCheckout({ run = command, allowedDirty = [] } = {}) {
   const head = run('git', ['rev-parse', 'HEAD']);
   const remoteMain = run('git', ['rev-parse', 'origin/main']);
   if (branch !== 'main') throw new Error(`Draft uploads require the existing main branch; found ${branch || 'detached HEAD'}.`);
-  if (!/^(?:https:\/\/github\.com\/|git@github\.com:)ilovespectra\/rippa-record(?:\.git)?$/i.test(remote)) {
-    throw new Error('Draft uploads require the canonical ilovespectra/rippa-record origin.');
+  if (!/^(?:https:\/\/github\.com\/|git@github\.com:)ilovespectra\/RippaRecord(?:\.git)?$/i.test(remote)) {
+    throw new Error('Draft uploads require the canonical ilovespectra/RippaRecord origin.');
   }
   if (head !== remoteMain) throw new Error('Draft uploads require main to match origin/main. Push the verified source commit first.');
-  const status = run('git', ['status', '--porcelain', '--untracked-files=all']);
-  const unexpected = status.split(/\r?\n/).filter(Boolean).map((line) => line.slice(3).replace(/^"|"$/g, ''))
-    .filter((file) => !allowedDirty.includes(file));
+  const changedFiles = [
+    run('git', ['diff', '--name-only']),
+    run('git', ['diff', '--cached', '--name-only']),
+    run('git', ['ls-files', '--others', '--exclude-standard']),
+  ].flatMap((output) => output.split(/\r?\n/).filter(Boolean));
+  const unexpected = [...new Set(changedFiles)].filter((file) => !allowedDirty.includes(file));
   if (unexpected.length) throw new Error(`Draft uploads require a clean checkout; unrelated local edits remain: ${unexpected.join(', ')}.`);
   return { branch, head, remoteMain };
 }

@@ -3,7 +3,7 @@
 const { spawnSync } = require('node:child_process');
 
 const OWNER = 'ilovespectra';
-const REPO = 'rippa-record';
+const REPO = 'RippaRecord';
 
 function requestGh(args) {
   const result = spawnSync('gh', args, {

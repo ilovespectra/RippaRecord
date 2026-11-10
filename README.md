@@ -1,6 +1,6 @@
 # Rippa 🔴
 
-Rippa Record is a macOS menu-bar helper for Reason: prepare a session, route system audio into Reason, then automate recording and export. It records the configured system audio route—not an isolated app stream. The standalone, portfolio-independent landing page is in [`rippa-record-site/`](rippa-record-site/).
+Rippa Record is a macOS menu-bar helper for Reason: prepare a session, route system audio into Reason, then automate recording and export. It records the configured system audio route—not an isolated app stream. The standalone, portfolio-independent landing page is at [ripparecord.kolektivkrog.si](https://ripparecord.kolektivkrog.si/), and the canonical source repository is [ilovespectra/RippaRecord](https://github.com/ilovespectra/RippaRecord). The site files are in [`rippa-record-site/`](rippa-record-site/).
 
 ## What it does when you click **Start Recording**
 
@@ -142,7 +142,7 @@ the authenticated `ilovespectra` owner account can create or update an
 been verified. Release notes are drafted with the configured local Ollama model
 (default `qwen2.5:3b`); the console never publishes the release. If owner access
 is unavailable, the console continues with a local-only build. Draft creation
-uses the existing `ilovespectra/rippa-record` repository and targets `main`; it
+uses the canonical `ilovespectra/RippaRecord` repository and targets `main`; it
 does not deploy or change hosting or DNS. The draft workflow leaves the
 installed app untouched. Run `npm run release:preflight` for the separate,
 read-only owner/admin check. Builds use a user-configured local signing identity

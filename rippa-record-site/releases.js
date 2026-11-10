@@ -1,6 +1,6 @@
 (() => {
   const owner = 'ilovespectra';
-  const repo = 'rippa-record';
+  const repo = 'RippaRecord';
   const count = document.getElementById('release-count');
   const status = document.getElementById('release-count-status');
   const latestVersion = document.getElementById('latest-version');

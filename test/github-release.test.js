@@ -6,9 +6,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {
-  resolveReleaseMode, sha256File, verifyDraftRecord, createOrUpdateDraft,
+  resolveReleaseMode, verifyMainCheckout, sha256File, verifyDraftRecord, createOrUpdateDraft,
 } = require('../dev-console/github-release.cjs');
-const ownerAccess = () => ({ owner: 'ilovespectra', repo: 'rippa-record', admin: true });
+const ownerAccess = () => ({ owner: 'ilovespectra', repo: 'RippaRecord', admin: true });
 
 function makeFiles() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rippa-release-test-'));
@@ -28,7 +28,7 @@ function makeFiles() {
 function recordFor(f, overrides = {}) {
   return {
     id: 73, tag_name: 'v0.1.5', name: 'Rippa Record 0.1.5', draft: true,
-    html_url: 'https://github.com/ilovespectra/rippa-record/releases/tag/v0.1.5',
+    html_url: 'https://github.com/ilovespectra/RippaRecord/releases/tag/v0.1.5',
     assets: f.files.map((item) => ({
       name: path.basename(item.path), size: fs.statSync(item.path).size,
       digest: `sha256:${item.sha256}`,
@@ -45,6 +45,22 @@ test('owner access selects draft; unavailable or non-owner access stays local', 
   let checked = false;
   assert.equal(resolveReleaseMode({ localOnly: true, checkOwner: () => { checked = true; } }).mode, 'local');
   assert.equal(checked, false);
+});
+
+test('main checkout preflight permits only the console version metadata changes', () => {
+  const outputs = new Map([
+    ['branch --show-current', 'main'],
+    ['remote get-url origin', 'https://github.com/ilovespectra/RippaRecord.git'],
+    ['rev-parse HEAD', 'a'.repeat(40)],
+    ['rev-parse origin/main', 'a'.repeat(40)],
+    ['diff --name-only', 'package.json\npackage-lock.json'],
+    ['diff --cached --name-only', ''],
+    ['ls-files --others --exclude-standard', ''],
+  ]);
+  const run = (_program, args) => outputs.get(args.join(' ')) ?? '';
+  assert.equal(verifyMainCheckout({ run, allowedDirty: ['package.json', 'package-lock.json'] }).branch, 'main');
+  outputs.set('diff --name-only', 'README.md\npackage.json');
+  assert.throws(() => verifyMainCheckout({ run, allowedDirty: ['package.json', 'package-lock.json'] }), /unrelated local edits remain: README.md/);
 });
 
 test('remote draft verification requires exact version, asset sizes, and SHA-256 digests', () => {
