@@ -131,21 +131,23 @@ Use these to refine `loopMenuOverride` / `exportMenuMatch` in `config.json`.
 From the Rippa Record source folder, run `npm run dev:console`. Choose
 `next` for one custom digit-rollover step or `current` to rebuild the current
 version. For example, `1.0.9` rolls to `1.1.0`, and `1.9.9` rolls to `2.0.0`.
-After confirmation the console runs the tests, updates the version and lockfile,
-then rebuilds Rippa Record. By default it installs in `~/Applications`. For a
-safe isolated candidate that does not replace the installed app, set
-`RIPPA_STAGE_ONLY=1` and optionally `RIPPA_STAGE_DIR=/path/to/candidates`
-before running the console; an existing candidate is never overwritten. A
-failed build restores the prior version metadata. The console source lives in
-`dev-console/`, separate from the app bundle and the landing page in
-`rippa-record-site/`. This is a local packaging/install workflow only; it does
-not upload releases or install owner credentials in the app. Run
-`npm run release:preflight` for a read-only check that the local GitHub CLI is
-authenticated as `ilovespectra` and has admin access to the official
-`ilovespectra/rippa-record` repository. It never publishes. Builds use a
-user-configured local signing identity when one is available, otherwise they
-use an ad-hoc signature; neither mode is a notarized public release. Public
-release hosting and in-app update checks still need a verified release pipeline.
+After confirmation the console runs the tests and updates the version and
+lockfile. A normal local build installs in `~/Applications`; pass
+`--local-only` to explicitly skip release checks. Set `RIPPA_STAGE_ONLY=1` for
+an isolated local candidate instead of replacing the installed app.
+
+When run from the clean, up-to-date `main` checkout of the canonical repository,
+the authenticated `ilovespectra` owner account can create or update an
+**unpublished GitHub draft** after the staged app, ZIP, and SHA-256 assets have
+been verified. Release notes are drafted with the configured local Ollama model
+(default `qwen2.5:3b`); the console never publishes the release. If owner access
+is unavailable, the console continues with a local-only build. Draft creation
+uses the existing `ilovespectra/rippa-record` repository and targets `main`; it
+does not deploy or change hosting or DNS. The draft workflow leaves the
+installed app untouched. Run `npm run release:preflight` for the separate,
+read-only owner/admin check. Builds use a user-configured local signing identity
+when available, otherwise an ad-hoc signature; neither mode is notarized.
+
 
 ## Tests
 
