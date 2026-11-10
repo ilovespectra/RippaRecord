@@ -554,7 +554,7 @@ function resetToIdle() {
 function trayMenu() {
   const busy = !['idle', 'done', 'error'].includes(state);
   return Menu.buildFromTemplate([
-    { label: `Rippa — ${state}`, enabled: false },
+    { label: `Rippa Record v${app.getVersion()} — ${state}`, enabled: false },
     { type: 'separator' },
     { label: 'Start Recording', enabled: !busy, click: enableRippaMode },
     {
@@ -598,7 +598,7 @@ function refreshTray() {
   const active = !['idle', 'done', 'error'].includes(state);
   tray.setImage(makeTrayIcon(active));
   tray.setTitle('');
-  tray.setToolTip(`Rippa — ${state}`);
+  tray.setToolTip(`Rippa Record v${app.getVersion()} — ${state}`);
   tray.setContextMenu(trayMenu());
 }
 

@@ -14,6 +14,7 @@ function fixture({ packaged = false, primary = true, trusted = true, load, spyLa
   app.requestSingleInstanceLock = () => primary;
   app.whenReady = () => Promise.resolve();
   app.getPath = () => '/test/user-data';
+  app.getVersion = () => '0.1.4';
   app.dock = { hide() {} };
   app.quitCount = 0;
   app.quit = () => { app.quitCount++; };
@@ -50,7 +51,7 @@ function fixture({ packaged = false, primary = true, trusted = true, load, spyLa
     constructor(image) { this.image = image; this.title = ''; }
     setImage(image) { this.image = image; }
     setTitle(title) { this.title = title; }
-    setToolTip() {}
+    setToolTip(value) { this.tooltip = value; }
     setContextMenu() {}
     popUpContextMenu() {}
     on() {}
@@ -129,6 +130,13 @@ test('a new settings profile opens the setup wizard without starting a recording
   assert.equal(f.run('setupWindow !== null'), true);
   assert.equal(f.windows.length, 3);
   assert.ok(f.run('trayMenu().some((item) => item.label === "Preferences & device setup…")'));
+});
+
+test('tray menu and tooltip display the installed app version', async () => {
+  const f = fixture({ packaged: true });
+  await f.settled();
+  assert.equal(f.run('trayMenu()[0].label'), 'Rippa Record v0.1.4 — idle');
+  assert.equal(f.run('tray.tooltip'), 'Rippa Record v0.1.4 — idle');
 });
 
 test('tray has one hollow idle circle and one solid red active circle', async () => {
